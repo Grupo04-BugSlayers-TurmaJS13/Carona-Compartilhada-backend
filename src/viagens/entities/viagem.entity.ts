@@ -1,52 +1,49 @@
 import { IsNotEmpty } from "class-validator";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
-import { Usuario } from "../../usuario/entities/usuario.entity";
-import { Motorista } from "../../motorista/entities/motorista.entity";
-import { ViagemStatus } from "../enums/viagem-status.enum";
+import { ViagemStatus } from "../../util/viagem-status.enum";
+import { Transform,TransformFnParams } from "class-transformer";
 
 @Entity({ name: 'tb_viagens' })
 export class Viagem {
 
     @PrimaryGeneratedColumn({ type: 'bigint' })
-    id!: number;
+    id: number;
 
+    @Transform(({value } : TransformFnParams) => value?.trim()) // remover espaços em branco do inicio e fim
+    @IsNotEmpty() // Força digitação
+    @Column({length: 100, nullable: false}) // VARCHAR(100) NOT NULL
+    embarque: string;
+
+    @Transform(({value } : TransformFnParams) => value?.trim()) // remover espaços em branco do inicio e fim
+    @IsNotEmpty() // Força digitação
+    @Column({length: 100, nullable: false}) // VARCHAR(100) NOT NULL
+    destino: string;
+
+    
     @IsNotEmpty()
-    @Column({ length: 255, nullable: false })
-    embarque!: string;
-
-    @IsNotEmpty()
-    @Column({ length: 255, nullable: false })
-    destino!: string;
-
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-    distancia!: number;
+    distancia: number;
+
+    @Column({ type: 'int', nullable: true })
+    tempoViagem: number;
 
     @Column({ type: 'enum', enum: ViagemStatus, default: ViagemStatus.SOLICITADA })
-    status!: ViagemStatus;
+    status: string;
 
     @Column({ default: false })
-    agendamento!: boolean;
+    agendamento: boolean;
 
     @Column({ type: 'datetime', nullable: true })
-    data_agendamento!: Date;
+    dataAgendamento: Date;
 
-    @Column({ default: false })
-    pagamento!: boolean;
+    @IsNotEmpty()
+    @Column({ type: 'enum', enum: ["Dinheiro", "Cartão", "Pix"], nullable: false })
+    pagamento: string;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
-    valor!: number;
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    valor: number;
 
-    @CreateDateColumn({ name: 'created_at' })
-    createdAt!: Date;
 
-    @UpdateDateColumn({ name: 'updated_at' })
-    updatedAt!: Date;
 
-    @ManyToOne(() => Usuario, (usuario) => usuario.viagens, { nullable: false })
-    @JoinColumn({ name: 'usuario_id' })
-    usuario!: Usuario;
-
-    @ManyToOne(() => Motorista, (motorista) => motorista.viagens, { nullable: true })
-    @JoinColumn({ name: 'motorista_id' })
-    motorista?: Motorista;
+   
 }
