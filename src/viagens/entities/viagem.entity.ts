@@ -1,7 +1,7 @@
 import { IsNotEmpty } from "class-validator";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { ViagemStatus } from "../../util/viagem-status.enum";
-import { Transform,TransformFnParams } from "class-transformer";
+import { Transform, TransformFnParams } from "class-transformer";
 import { Veiculo } from "../../veiculos/entities/veiculo.entity";
 import { Usuario } from "../../usuario/entities/usuario.entity";
 import { ApiProperty } from "@nestjs/swagger/dist/decorators/api-property.decorator";
@@ -13,25 +13,23 @@ export class Viagem {
     @ApiProperty()
     id: number;
 
-    @Transform(({value } : TransformFnParams) => value?.trim()) // remover espaços em branco do inicio e fim
+    @Transform(({ value }: TransformFnParams) => value?.trim()) // remover espaços em branco do inicio e fim
     @IsNotEmpty() // Força digitação
-    @Column({length: 100, nullable: false}) // VARCHAR(100) NOT NULL
+    @Column({ length: 255, nullable: false }) // VARCHAR(100) NOT NULL
     @ApiProperty()
     embarque: string;
 
-    @Transform(({value } : TransformFnParams) => value?.trim()) // remover espaços em branco do inicio e fim
+    @Transform(({ value }: TransformFnParams) => value?.trim()) // remover espaços em branco do inicio e fim
     @IsNotEmpty() // Força digitação
-    @Column({length: 100, nullable: false}) // VARCHAR(100) NOT NULL
+    @Column({ length: 255, nullable: false }) // VARCHAR(100) NOT NULL
     @ApiProperty()
     destino: string;
 
-    
-    @IsNotEmpty()
-    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     @ApiProperty()
     distancia: number;
 
-    @Column({ type: 'int', nullable: false })
+    @Column({ type: 'int', nullable: true })
     @ApiProperty()
     tempoViagem: number;
 
@@ -56,9 +54,27 @@ export class Viagem {
     @ApiProperty()
     pagamento: string;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     @ApiProperty()
     valor: number;
+
+    //Coordenadas embarque
+    @Column("decimal", { precision: 10, scale: 6 })
+    @ApiProperty()
+    latOrigem!: number;
+
+    @Column("decimal", { precision: 10, scale: 6 })
+    @ApiProperty()
+    lonOrigem!: number;
+
+    //Coordenadas destino
+    @Column("decimal", { precision: 10, scale: 6 })
+    @ApiProperty()
+    latDestino!: number;
+
+    @Column("decimal", { precision: 10, scale: 6 })
+    @ApiProperty()
+    lonDestino!: number;
 
     @ApiProperty({ type: () => Veiculo })
     @ManyToOne(() => Veiculo, (veiculo) => veiculo.id)

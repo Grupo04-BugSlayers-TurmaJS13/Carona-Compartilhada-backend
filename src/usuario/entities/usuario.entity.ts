@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsOptional, MinLength } from "class-validator"
+import { IsDate, IsEmail, IsNotEmpty, IsNumber, IsOptional, MinLength } from "class-validator"
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
 import { Exclude, Transform, TransformFnParams } from "class-transformer"
 import { Viagem } from "../../viagens/entities/viagem.entity"
@@ -10,7 +10,6 @@ export class Usuario {
 
 
     @PrimaryGeneratedColumn()
-    @IsNumber()
     @ApiProperty()
     id: number
 
@@ -27,7 +26,6 @@ export class Usuario {
     @ApiProperty()
     usuario: string
 
-    
     @Transform(({ value }: TransformFnParams) => value?.trim())
     @IsNotEmpty()
     @Column({ length: 255, nullable: false })
@@ -41,11 +39,12 @@ export class Usuario {
     @ApiProperty()
     foto: string
 
+    @IsNotEmpty()
+    @Column({ type: "date", nullable: false })
+    data_nascimento: Date
+
     @ApiProperty({ type: () => Viagem, isArray: true })
     @OneToMany(() => Viagem, (viagem) => viagem.usuario)
     viagens: Viagem[]
-
-    
-
 
 }
