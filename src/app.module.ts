@@ -8,12 +8,13 @@ import { UsuarioModule } from './usuario/usuario.module';
 import { ViagemModule } from './viagens/viagem.module';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { ProdService } from './data/services/prod.service';
+import { DevService } from './data/services/dev.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
-      useClass: ProdService,
+      useClass: DevService,
       imports: [ConfigModule],
     }),
     VeiculoModule,
