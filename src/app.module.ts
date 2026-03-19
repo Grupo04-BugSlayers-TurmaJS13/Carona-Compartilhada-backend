@@ -3,40 +3,29 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { VeiculoModule } from './veiculos/veiculo.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { ViagemModule } from './viagens/viagem.module';
 
 @Module({
 
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get("DB_HOST"),
-        port: configService.get('DB_PORT'),
-        username: configService.get("DB_USERNAME"),
-        password: configService.get("DB_PASSWORD"),
-        database: configService.get("DB_DATABASE"),
-        autoLoadEntities: true,
-        synchronize: true,
-        logging: true,
-      }),
+  imports: [TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: '1306',
+      database: 'db_loja_games_bloco2',
+      autoLoadEntities: true, 
+      synchronize: true,
+      
     }),
     VeiculoModule,
     UsuarioModule,
     ViagemModule,
     AuthModule
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule { }
