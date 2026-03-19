@@ -28,7 +28,7 @@ API backend para sistema de caronas compartilhadas desenvolvido com **NestJS**, 
 Mantido o atributo `usuario` em vez de `email` nas entidades para maior **compatibilidade de segurança**. Permite flexibilidade na autenticação (username, email ou telefone) mantendo um identificador único estável para relacionamentos.
 
 ### Omissão do método DELETE de Usuários
-Removido intencionalmente para preservar **integridade referencial**. Usuários possuem relacionamentos bidirecionais com Viagens e Veículos. Soft delete ou anonymização devem ser implementados em produção.
+Removido intencionalmente para preservar **integridade referencial**. Usuários possuem relacionamentos bidirecionais com Viagens e Veículos. Soft delete ou anonimização devem ser implementados em produção.
 
 ## Funcionalidades de Negócio
 
@@ -55,12 +55,15 @@ npm run start:dev
 4. Start command: `npm run start:prod`
 
 ## Contribuidores
-
-| Nome | GitHub | LinkedIn |
-|------|--------|----------|
-| Bianca Silva | [github.com/bianca-silva](https://github.com/bianca-silva) | [linkedin.com/in/bianca-silva](https://linkedin.com/in/bianca-silva) |
-| João Developer | [github.com/joaodev](https://github.com/joaodev) | [linkedin.com/in/joaodev](https://linkedin.com/in/joaodev) |
-| Maria Tech Lead | [github.com/mariatl](https://github.com/mariatl) | [linkedin.com/in/mariatl](https://linkedin.com/in/mariatl) |
+| Desenvolvedor | GitHub | LinkedIn |
+| :--- | :--- | :--- |
+| Sabrina Novaes | [GitHub](https://github.com/SabrinaNovaes) | [LinkedIn](https://www.linkedin.com/in/sabrina-novaes/) |
+| Bianca Caetano | [GitHub](https://github.com/bia024) | [LinkedIn](http://www.linkedin.com/in/bia-caetano) |
+| Clarisse Rodrigues | [GitHub](https://github.com/clarodriguess) | [LinkedIn](https://www.linkedin.com/in/clarissee-rodriguess/) |
+| Gabriela Almeida | [GitHub](https://github.com/Gaalmeida-dev) | [LinkedIn](https://www.linkedin.com/in/gabriela-almeida-escalera-dos-santos-27022b3a0/) |
+| Nathalia Scalercio | [GitHub](https://github.com/nathscalercio) | [LinkedIn](http://linkedin.com/in/nathalia-scalercio/) |
+| Leonardo Botelho | [GitHub](https://github.com/Botelhool) | [LinkedIn](https://www.linkedin.com/in/leonardo-botelho-b29061174/) |
+| Ramon Alberto | [GitHub](https://github.com/RAMONBRX) | [LinkedIn](https://www.linkedin.com/in/ramon-alberto/) |
 
 ## Endpoints Swagger
 Acessível em `/api` após autenticação JWT.
