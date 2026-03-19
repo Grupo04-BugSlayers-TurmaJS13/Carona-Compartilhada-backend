@@ -43,11 +43,11 @@ export class Viagem {
     @ApiProperty()
     agendamento: boolean;
 
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'date', nullable: true })
     @ApiProperty()
     dataAgendamento: Date;
 
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'date', nullable: true })
     @ApiProperty()
     dataEncerramento: Date;
 
