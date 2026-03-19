@@ -2,7 +2,8 @@ import { IsDate, IsEmail, IsNotEmpty, IsNumber, IsOptional, MinLength } from "cl
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
 import { Exclude, Transform, TransformFnParams } from "class-transformer"
 import { Viagem } from "../../viagens/entities/viagem.entity"
-import { ApiProperty } from "@nestjs/swagger/dist/decorators/api-property.decorator"
+import { ApiProperty } from "@nestjs/swagger"
+
 
 
 @Entity({ name: "tb_usuarios" })
@@ -39,9 +40,7 @@ export class Usuario {
     @ApiProperty()
     foto: string
 
-    @IsNotEmpty()
-    @Column({ type: "date", nullable: false })
-    data_nascimento: Date
+
 
     @ApiProperty({ type: () => Viagem, isArray: true })
     @OneToMany(() => Viagem, (viagem) => viagem.usuario)

@@ -12,7 +12,7 @@ export class DevService implements TypeOrmOptionsFactory {
             port: 3306,
             username: 'root',
             password: 'root',
-            database: 'db_bip',
+            database: 'db_carona_compartilhada',
             autoLoadEntities: true,
             synchronize: true,
     };
