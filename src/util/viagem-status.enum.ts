@@ -1,0 +1,7 @@
+export enum ViagemStatus {
+    SOLICITADA = 'SOLICITADA',
+    ACEITA = 'ACEITA',
+    EM_ANDAMENTO = 'EM_ANDAMENTO',
+    CONCLUIDA = 'CONCLUIDA',
+    CANCELADA = 'CANCELADA',
+}
