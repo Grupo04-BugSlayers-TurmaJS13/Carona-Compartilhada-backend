@@ -6,19 +6,15 @@ import { VeiculoModule } from './veiculos/veiculo.module';
 import { AuthModule } from './auth/auth.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { ViagemModule } from './viagens/viagem.module';
+import { ConfigModule } from '@nestjs/config/dist/config.module';
+import { ProdService } from './data/services/prod.service';
 
 @Module({
-
-  imports: [TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: '1306',
-      database: 'db_loja_games_bloco2',
-      autoLoadEntities: true, 
-      synchronize: true,
-      
+  imports: [
+    ConfigModule.forRoot(),
+    TypeOrmModule.forRootAsync({
+      useClass: ProdService,
+      imports: [ConfigModule],
     }),
     VeiculoModule,
     UsuarioModule,
