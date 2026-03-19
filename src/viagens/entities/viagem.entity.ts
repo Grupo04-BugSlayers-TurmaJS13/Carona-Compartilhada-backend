@@ -2,6 +2,8 @@ import { IsNotEmpty } from "class-validator";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { ViagemStatus } from "../../util/viagem-status.enum";
 import { Transform,TransformFnParams } from "class-transformer";
+import { Veiculo } from "../../veiculos/entities/veiculo.entity";
+import { Usuario } from "../../usuario/entities/usuario.entity";
 
 @Entity({ name: 'tb_viagens' })
 export class Viagem {
@@ -46,7 +48,9 @@ export class Viagem {
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     valor: number;
 
+    @ManyToOne(() => Veiculo, (veiculo) => veiculo.id)
+    veiculo: Veiculo;
 
-
-   
+    @ManyToOne(() => Usuario, (usuario) => usuario.id)
+    usuario: Usuario;
 }

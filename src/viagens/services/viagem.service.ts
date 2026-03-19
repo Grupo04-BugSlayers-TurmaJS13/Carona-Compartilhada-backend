@@ -19,7 +19,7 @@ export class ViagemService{
 
     async findAll():  Promise<Viagem[]>{
         // SELECT * FROM tb_viagems;
-        return this.viagemRepository.find();
+        return this.viagemRepository.find({ relations: { veiculo: true, usuario: true } });
     }
 
     
@@ -28,7 +28,8 @@ export class ViagemService{
         const viagem = await this.viagemRepository.findOne({
             where:{
                 id: id
-            }
+            },
+            relations: { veiculo: true, usuario: true }
         })
 
         if(!viagem)
@@ -42,7 +43,8 @@ export class ViagemService{
         const viagem = await this.viagemRepository.findOne({
             where:{
                 destino: ILike(`%${destino}%`)
-            }
+            },
+            relations: { veiculo: true, usuario: true }
         })
 
         if(!viagem)

@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { IsNotEmpty, Length } from "class-validator";
 import { Transform } from "class-transformer";
 import { TransformFnParams } from "class-transformer";
+import { Viagem } from "../../viagens/entities/viagem.entity";
 
 export enum TipoVeiculo {
     CARRO = "CARRO",
@@ -56,6 +57,9 @@ export class Veiculo {
     @Length(7, 10)
     @Column({ unique: true })
     placa: string
+
+    @OneToMany(() => Viagem, (viagem) => viagem.veiculo)
+    viagens: Viagem[]
 }
 
 

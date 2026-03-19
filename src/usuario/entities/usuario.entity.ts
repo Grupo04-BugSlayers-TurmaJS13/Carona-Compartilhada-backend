@@ -1,6 +1,7 @@
 import { IsEmail, IsNotEmpty, IsNumber, IsOptional, MinLength } from "class-validator"
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
 import { Exclude, Transform, TransformFnParams } from "class-transformer"
+import { Viagem } from "../../viagens/entities/viagem.entity"
 
 
 @Entity({ name: "tb_usuarios" })
@@ -36,7 +37,8 @@ export class Usuario {
     @IsOptional()
     foto: string
 
-
+    @OneToMany(() => Viagem, (viagem) => viagem.usuario)
+    viagens: Viagem[]
 
     
 
