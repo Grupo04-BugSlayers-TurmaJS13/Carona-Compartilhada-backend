@@ -1,4 +1,4 @@
-# Carona Compartilhada Backend
+# Carona Compartilhada Backend\n\n![Logo](assets/bipbip.png)\n\n
 
 ## Visão Geral
 
@@ -18,7 +18,7 @@ API backend para sistema de caronas compartilhadas desenvolvido com **NestJS**, 
 
 - Autenticação e autorização JWT
 - CRUD completo para Usuários, Veículos e Viagens
-- Relacionamentos bidirecionais (Usuário-Viagem-Veículo)
+- Relacionamentos bidirecionais (Usuário-Viagem-Veículo)\n\n![Diagrama de Relacionamento](assets/relacionamento.png)\n
 - Cálculo automático de tempo de viagem baseado em distância e velocidade média
 - Documentação API protegida por autenticação Bearer
 
@@ -27,10 +27,7 @@ API backend para sistema de caronas compartilhadas desenvolvido com **NestJS**, 
 ### Atributo 'usuario' vs 'email'
 Mantido o atributo `usuario` em vez de `email` nas entidades para maior **compatibilidade de segurança**. Permite flexibilidade na autenticação (username, email ou telefone) mantendo um identificador único estável para relacionamentos.
 
-### Omissão do método DELETE de Usuários
-Removido intencionalmente para preservar **integridade referencial**. Usuários possuem relacionamentos bidirecionais com Viagens e Veículos. Soft delete ou anonimização devem ser implementados em produção.
-
-## Funcionalidades de Negócio
+### Omissão do método DELETE de Usuários\nRemovido intencionalmente para preservar **integridade referencial**. Usuários possuem relacionamentos bidirecionais com Viagens e Veículos. Soft delete ou anonimização devem ser implementados em produção.\n\n## Diagrama de Relacionamentos\n\n![Diagrama de Relacionamento](assets/relacionamento.png)\n\n## Funcionalidades de Negócio
 
 ### Cálculo de Tempo de Viagem
 Método especializado que calcula tempo estimado baseado em:
