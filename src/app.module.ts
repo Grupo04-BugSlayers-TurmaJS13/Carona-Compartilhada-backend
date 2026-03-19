@@ -1,21 +1,30 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { VeiculoModule } from './veiculos/veiculo.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsuarioModule } from './usuario/usuario.module';
+import { VeiculoModule } from './veiculos/veiculo.module';
 import { ViagemModule } from './viagens/viagem.module';
-import { ConfigModule } from '@nestjs/config/dist/config.module';
-import { ProdService } from './data/services/prod.service';
-import { DevService } from './data/services/dev.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true, 
+    }),
     TypeOrmModule.forRootAsync({
-      useClass: ProdService,
       imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_DATABASE'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: true, 
+      }),
     }),
     VeiculoModule,
     UsuarioModule,

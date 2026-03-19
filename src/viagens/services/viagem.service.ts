@@ -23,20 +23,19 @@ export class ViagemService{
     }
 
     
-    async findByid(id: number): Promise<Viagem>{
-        // SELECT * FROM tb_viagems where id = ? ;
-        const viagem = await this.viagemRepository.findOne({
-            where:{
-                id: id
-            },
-            relations: { veiculo: true, usuario: true }
-        })
+async findByid(id: number): Promise<Viagem> {
+    const viagem = await this.viagemRepository.findOne({
+        where: { id: id },
+       // relations: ['veiculo', 'usuario'], 
+    });
 
-        if(!viagem)
-            throw new HttpException("Viagem não encontrada!", HttpStatus.NOT_FOUND);
-
-        return viagem;
+    if (!viagem) {
+        console.log(`Tentando buscar ID: ${id} - Tipo: ${typeof id}`);
+        throw new HttpException("Viagem não encontrada!", HttpStatus.NOT_FOUND);
     }
+
+    return viagem;
+}
 
     async findByDestino(destino: string): Promise<Viagem>{
         // SELECT * FROM tb_viagems where id = ? ;
@@ -66,22 +65,22 @@ export class ViagemService{
         return await this.viagemRepository.save(viagem);
     }
 
-    async update(viagem: Viagem): Promise<Viagem>{
-        
-        if(!viagem.id || viagem.id <= 0)
-            throw new HttpException("O ID da viagem é inválido!", HttpStatus.BAD_REQUEST);
+  async update(viagem: Viagem): Promise<Viagem> {
+    if (!viagem.id || viagem.id <= 0)
+        throw new HttpException("O ID da viagem é inválido!", HttpStatus.BAD_REQUEST);
 
-        //Checa se a Viagem existe
-        await this.findByid(viagem.id);
+    const viagemExistente = await this.viagemRepository.preload(viagem);
 
-        this.verificarStatusValido(viagem.status);
-        this.ajustarDataAgendamento(viagem);
-        this.calcularTempoViagem(viagem);
-        this.calcularValorViagem(viagem);
+    if (!viagemExistente)
+        throw new HttpException("Viagem não encontrada!", HttpStatus.NOT_FOUND);
 
-        //UPDATE tb_viagems SET nome = ?, texto = ?, data = CURRENT_TIMESTAMP() WHERE id = ?;
-        return await this.viagemRepository.save(viagem);
-    }
+    this.verificarStatusValido(viagemExistente.status);
+    this.ajustarDataAgendamento(viagemExistente);
+    this.calcularTempoViagem(viagemExistente);
+    this.calcularValorViagem(viagemExistente);
+
+    return await this.viagemRepository.save(viagemExistente);
+}
 
     async delete(id: number): Promise<DeleteResult>{
         

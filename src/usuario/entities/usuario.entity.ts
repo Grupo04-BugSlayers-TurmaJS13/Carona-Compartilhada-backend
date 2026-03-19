@@ -11,6 +11,7 @@ export class Usuario {
 
     @PrimaryGeneratedColumn()
     @IsNumber()
+    @IsOptional()
     @ApiProperty()
     id: number
 
