@@ -14,18 +14,6 @@ export class Veiculo {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Transform(({ value }: TransformFnParams) => value?.trim())
-    @IsNotEmpty({ message: "O nome do motorista é obrigatório"})
-    @Length(3, 255, { message: "O nome do motorista deve conter no mínimo 3 caracteres" })
-    @Column()
-    motorista: string
-
-    @Transform(({ value }: TransformFnParams) => value?.trim())
-    @IsNotEmpty({ message: "A foto é obrigatória"})
-    @Length(3, 500)
-    @Column()
-    foto: string;
-
     @IsNotEmpty({ message: "Escolha o tipo de veículo"})
     @Column({
         type: "enum",
