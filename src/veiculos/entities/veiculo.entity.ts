@@ -16,14 +16,6 @@ export class Veiculo {
     @PrimaryGeneratedColumn()
     @ApiProperty()
     id: number
-
-    @Transform(({ value }: TransformFnParams) => value?.trim())
-    @IsNotEmpty({ message: "O nome do motorista é obrigatório"})
-    @Length(3, 255, { message: "O nome do motorista deve conter no mínimo 3 caracteres" })
-    @Column()
-    @ApiProperty()
-    motorista: string
-
     @Transform(({ value }: TransformFnParams) => value?.trim())
     @IsNotEmpty({ message: "A foto é obrigatória"})
     @Length(3, 500)
@@ -36,6 +28,7 @@ export class Veiculo {
         type: "enum",
         enum: TipoVeiculo
     })
+    @ApiProperty()
     tipo: TipoVeiculo
 
     @Transform(({ value }: TransformFnParams) => value?.trim())

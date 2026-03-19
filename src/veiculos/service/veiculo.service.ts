@@ -26,9 +26,9 @@ export class VeiculoService {
         return veiculo
     }
 
-    async findByMotorista(motorista: string): Promise<Veiculo[]> {
+    async findByModelo(modelo: string): Promise<Veiculo[]> {
         return this.veiculoRepository.find({
-            where: { motorista: ILike(`%${motorista}%`) }
+            where: { modelo: ILike(`%${modelo}%`) }
         })
     }
 
