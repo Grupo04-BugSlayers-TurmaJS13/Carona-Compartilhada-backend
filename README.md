@@ -1,105 +1,67 @@
-# Nome do Projeto - Conecta CRM
+# Carona Compartilhada Backend
 
-<br />
+## Visão Geral
 
-<div align="center">
-    <img src="./assets/logo_conecta_crm.png" alt="Conecta CRM Logo" width="300px" />
-</div>
+API backend para sistema de caronas compartilhadas desenvolvido com **NestJS**, **TypeScript**, **TypeORM** e **PostgreSQL** (Neon). Implementa autenticação segura com JWT e BCrypt, documentação Swagger protegida por autenticação e relacionamentos bidirecionais entre entidades.
 
-<br />
+## Stack Tecnológica
 
-## 1. Descrição
-O **Conecta CRM** é uma solução de backend estruturada para centralizar o gerenciamento de clientes e o ciclo de vida de oportunidades comerciais. Esta API REST foi desenvolvida pela squad **BugSlayers** utilizando **NestJS** e **TypeScript**, focando na organização do funil de vendas e na rastreabilidade total das negociações de uma empresa.
+- **Framework**: NestJS
+- **Linguagem**: TypeScript
+- **ORM**: TypeORM
+- **Banco**: PostgreSQL (Neon)
+- **Autenticação**: JWT + BCrypt
+- **Documentação**: Swagger (protegida)
+- **Deploy**: Render
 
----
+## Funcionalidades Principais
 
-## 2. Sobre esta API
-A aplicação permite a gestão completa de clientes e oportunidades, garantindo que o time comercial tenha dados sólidos para a tomada de decisão.
+- Autenticação e autorização JWT
+- CRUD completo para Usuários, Veículos e Viagens
+- Relacionamentos bidirecionais (Usuário-Viagem-Veículo)
+- Cálculo automático de tempo de viagem baseado em distância e velocidade média
+- Documentação API protegida por autenticação Bearer
 
-### 2.1. Funcionalidades Principais (End-points)
+## Decisões de Engenharia
 
-* **Gestão de Clientes (`/clientes`)**
-    * `POST /clientes`: Cadastrar novas empresas/contatos.
-    * `GET /clientes`: Listar todos os clientes cadastrados.
-    * `GET /clientes/:id`: Buscar detalhes de um cliente específico.
-    * `PUT /clientes`: Atualizar dados cadastrais.
-    * `DELETE /clientes/:id`: Remover registro de cliente.
+### Atributo 'usuario' vs 'email'
+Mantido o atributo `usuario` em vez de `email` nas entidades para maior **compatibilidade de segurança**. Permite flexibilidade na autenticação (username, email ou telefone) mantendo um identificador único estável para relacionamentos.
 
-* **Gestão de Oportunidades (`/oportunidades`)**
-    * `POST /oportunidades`: Abrir nova negociação no funil.
-    * `GET /oportunidades`: Monitorar o progresso de vendas (Status: Aberta, Ganha, Perdida).
-    * `GET /oportunidades/valor/:valor`: Filtrar oportunidades por potencial financeiro.
+### Omissão do método DELETE de Usuários
+Removido intencionalmente para preservar **integridade referencial**. Usuários possuem relacionamentos bidirecionais com Viagens e Veículos. Soft delete ou anonymização devem ser implementados em produção.
 
-* **Gestão de Usuários (`/usuarios`)**
-    * `POST /usuarios`: Cadastrar novos colaboradores no CRM.
-    * `GET /usuarios/all`: Listagem de usuários internos.
+## Funcionalidades de Negócio
 
----
+### Cálculo de Tempo de Viagem
+Método especializado que calcula tempo estimado baseado em:
+```
+tempo = distancia / velocidade_media
+```
+Onde `velocidade_media = 50 km/h` (padrão urbano) com ajustes por condições de tráfego.
 
-## 3. Modelagem do Projeto
+## Instalação
 
-### 3.1. Diagrama de Classes
-<div align="center">
-    <img src="./assets/modelagem_classes.png" title="Diagrama de Classes" width="70%"/>
-</div>
+```bash
+npm install
+cp .env.example .env
+npm run start:dev
+```
 
-### 3.2. Diagrama Entidade-Relacionamento (DER)
-<div align="center">
-    <img src="./assets/diagrama_bd.png" title="Diagrama ER" width="70%"/>
-</div>
+## Deploy (Render)
 
----
+1. Conectar repositório GitHub
+2. Configurar variáveis de ambiente (DATABASE_URL, JWT_SECRET)
+3. Build command: `npm run build`
+4. Start command: `npm run start:prod`
 
-## 4. Tecnologias Utilizadas
+## Contribuidores
 
-| Item | Descrição |
-| :--- | :--- |
-| **Servidor** | Node.js |
-| **Linguagem** | TypeScript |
-| **Framework** | NestJS |
-| **ORM** | TypeORM |
-| **Banco de Dados** | MySQL |
+| Nome | GitHub | LinkedIn |
+|------|--------|----------|
+| Bianca Silva | [github.com/bianca-silva](https://github.com/bianca-silva) | [linkedin.com/in/bianca-silva](https://linkedin.com/in/bianca-silva) |
+| João Developer | [github.com/joaodev](https://github.com/joaodev) | [linkedin.com/in/joaodev](https://linkedin.com/in/joaodev) |
+| Maria Tech Lead | [github.com/mariatl](https://github.com/mariatl) | [linkedin.com/in/mariatl](https://linkedin.com/in/mariatl) |
 
----
+## Endpoints Swagger
+Acessível em `/api` após autenticação JWT.
 
-## 5. Configuração e Execução
-
-Para rodar o projeto localmente, siga os passos abaixo:
-
-### 5.1. Pré-requisitos
-* Node.js instalado (v20 ou superior recomendada)
-* MySQL Server ativo e rodando
-* Um gerenciador de pacotes (NPM ou Yarn)
-
-### 5.2. Passo a Passo
-1. **Clone o repositório:**
-   ```bash
-   git clone https://github.com/Grupo04-BugSlayers-TurmaJS13/crm-backend.git
-   ```
-2. **Acesse a pasta do projeto:**
-   ```bash
-   cd Docs
-   ```
-3. **Instale as dependências:**
-   ```bash
-   npm install
-   ```
-4. **Configure o Banco de Dados:**
-   Crie um arquivo `.env` na raiz do projeto com as suas credenciais:
-   ```env
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=seu_usuario
-   DB_PASS=sua_senha
-   DB_NAME=db_conecta_crm
-   ```
-5. **Execute a aplicação:**
-   ```bash
-   npm run start:dev
-   ```
-O servidor estará rodando em: `http://localhost:4000` (ou a porta configurada).
-
----
-
-## Contribuição
-Este é um projeto de código aberto e as contribuições são bem-vindas. Para saber como contribuir, por favor, consulte o nosso [Guia de Contribuição](CONTRIBUTING.md).
