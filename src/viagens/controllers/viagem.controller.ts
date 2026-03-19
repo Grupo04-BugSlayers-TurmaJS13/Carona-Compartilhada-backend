@@ -44,4 +44,10 @@ export class ViagemController{
     delete(@Param("id", ParseIntPipe)id: number){
         return this.viagemService.delete(id);
     }
+
+    @Put("/concluir/")
+    @HttpCode(HttpStatus.OK)
+    encerrarViagem(@Body("id", ParseIntPipe)id: number, @Body("dataEncerramento")dataencerramento: Date): Promise<Viagem>{
+        return this.viagemService.encerrarViagem(id,dataencerramento);
+    }
 }

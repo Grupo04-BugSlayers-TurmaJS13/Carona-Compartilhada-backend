@@ -21,10 +21,10 @@ export class Viagem {
 
     
     @IsNotEmpty()
-    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
     distancia: number;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({ type: 'int', nullable: false })
     tempoViagem: number;
 
     @Column({ type: 'enum', enum: ViagemStatus, default: ViagemStatus.SOLICITADA })
@@ -35,6 +35,9 @@ export class Viagem {
 
     @Column({ type: 'datetime', nullable: true })
     dataAgendamento: Date;
+
+    @Column({ type: 'datetime', nullable: true })
+    dataEncerramento: Date;
 
     @IsNotEmpty()
     @Column({ type: 'enum', enum: ["Dinheiro", "Cartão", "Pix"], nullable: false })

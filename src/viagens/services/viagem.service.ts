@@ -90,8 +90,36 @@ export class ViagemService{
     }
 
 
+    async encerrarViagem(id: number, dataEncerramento: Date): Promise<Viagem> {
+        if (!id || id <= 0) {
+            throw new HttpException(
+                "O ID da viagem é inválido!",
+                HttpStatus.BAD_REQUEST,
+            );
+        }
 
-    verificarStatusValido(status: string): void{
+        const viagem = await this.findByid(id);
+
+        if (viagem.status === ViagemStatus.CONCLUIDA) {
+            throw new HttpException(
+                "A viagem já foi encerrada.",
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+        if(!viagem.dataEncerramento) {
+          viagem.dataEncerramento = new Date();
+        }
+        viagem.dataEncerramento = dataEncerramento;
+        viagem.status = ViagemStatus.CONCLUIDA;
+        this.calcularValorViagem(viagem);
+        this.adicionarTaxaTempoExtra(viagem);
+
+        return await this.viagemRepository.save(viagem);
+    }
+
+
+
+    private verificarStatusValido(status: string): void{
         const statusValidos = ["Solicitada", "Aceita", "Em Andamento", "Concluida", "Cancelada"];
         if(!statusValidos.includes(status)){
             throw new HttpException("Status da viagem é inválido! Deve ser 'Solicitada', 'Aceita', 'Em Andamento', 'Concluida' ou 'Cancelada'", HttpStatus.BAD_REQUEST);
@@ -159,4 +187,31 @@ export class ViagemService{
 
         viagem.valor = Number((distancia * 1 + tempoViagem * 0.2).toFixed(2));
     }
+
+    private adicionarTaxaTempoExtra(viagem: Viagem): void {
+        if (!viagem.dataAgendamento || !viagem.dataEncerramento) {
+            return;
+        }
+
+        const dataInicio = new Date(viagem.dataAgendamento);
+        const dataFim = new Date(viagem.dataEncerramento);
+
+        if (Number.isNaN(dataInicio.getTime()) || Number.isNaN(dataFim.getTime())) {
+            throw new HttpException(
+                "Datas de agendamento ou encerramento inválidas.",
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+
+        const tempoRealMinutos = Math.floor((dataFim.getTime() - dataInicio.getTime()) / (1000 * 60));
+        const tempoEsperadoMinutos = Number(viagem.tempoViagem);
+
+        if (tempoRealMinutos > tempoEsperadoMinutos) {
+            const minutosExtras = tempoRealMinutos - tempoEsperadoMinutos;
+            const taxaExtra = minutosExtras * 0.5;
+            viagem.valor = Number((Number(viagem.valor) + taxaExtra).toFixed(2));
+        }
+    }
+
+    
 }
