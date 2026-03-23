@@ -1,4 +1,4 @@
-import { IsDate, IsEmail, IsNotEmpty, IsNumber, IsOptional, MinLength } from "class-validator"
+import { IsDateString, IsEmail, IsNotEmpty, IsNumber, IsOptional, MinLength } from "class-validator"
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
 import { Exclude, Transform, TransformFnParams } from "class-transformer"
 import { Viagem } from "../../viagens/entities/viagem.entity"
@@ -39,9 +39,9 @@ export class Usuario {
     @ApiProperty()
     foto: string
 
-    @IsNotEmpty()
-    @Column({ type: "date", nullable: false })
-    data_nascimento: Date
+    @IsDateString()
+    @Column({ type: "date" })
+    data_nascimento: Date;
 
     @ApiProperty({ type: () => Viagem, isArray: true })
     @OneToMany(() => Viagem, (viagem) => viagem.usuario)

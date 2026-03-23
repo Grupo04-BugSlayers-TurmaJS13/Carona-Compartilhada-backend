@@ -14,7 +14,7 @@ export class DevService implements TypeOrmOptionsFactory {
             password: 'root',
             database: 'db_bip',
             autoLoadEntities: true,
-            synchronize: true,
+            synchronize: false,
     };
   }
 }
