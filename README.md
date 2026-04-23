@@ -1,5 +1,7 @@
 # Carona Compartilhada Backend
 
+![Logo](assets/bipbip.png)
+
 ## Visão Geral
 
 API backend para sistema de caronas compartilhadas desenvolvido com **NestJS**, **TypeScript**, **TypeORM** e **PostgreSQL** (Neon). Implementa autenticação segura com JWT e BCrypt, documentação Swagger protegida por autenticação e relacionamentos bidirecionais entre entidades.
@@ -19,6 +21,9 @@ API backend para sistema de caronas compartilhadas desenvolvido com **NestJS**, 
 - Autenticação e autorização JWT
 - CRUD completo para Usuários, Veículos e Viagens
 - Relacionamentos bidirecionais (Usuário-Viagem-Veículo)
+
+![Diagrama de Relacionamento](assets/relacionamento.png)
+
 - Cálculo automático de tempo de viagem baseado em distância e velocidade média
 - Documentação API protegida por autenticação Bearer
 
@@ -29,6 +34,10 @@ Mantido o atributo `usuario` em vez de `email` nas entidades para maior **compat
 
 ### Omissão do método DELETE de Usuários
 Removido intencionalmente para preservar **integridade referencial**. Usuários possuem relacionamentos bidirecionais com Viagens e Veículos. Soft delete ou anonimização devem ser implementados em produção.
+
+## Diagrama de Relacionamentos
+
+![Diagrama de Relacionamento](assets/relacionamento.png)
 
 ## Funcionalidades de Negócio
 
