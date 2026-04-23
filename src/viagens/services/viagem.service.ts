@@ -57,7 +57,7 @@ export class ViagemService{
     
     async create(viagem: Viagem): Promise<Viagem>{
 
-        
+        viagem.status = this.normalizarStatus(viagem.status);
         this.verificarStatusValido(viagem.status);
         this.ajustarDataAgendamento(viagem);
         this.calcularTempoViagem(viagem);
@@ -74,6 +74,7 @@ export class ViagemService{
         //Checa se a Viagem existe
         await this.findByid(viagem.id);
 
+        viagem.status = this.normalizarStatus(viagem.status);
         this.verificarStatusValido(viagem.status);
         this.ajustarDataAgendamento(viagem);
         this.calcularTempoViagem(viagem);
@@ -122,11 +123,19 @@ export class ViagemService{
 
 
     private verificarStatusValido(status: string): void{
-        const statusValidos = ["Solicitada", "Aceita", "Em Andamento", "Concluida", "Cancelada"];
-        if(!statusValidos.includes(status)){
-            throw new HttpException("Status da viagem é inválido! Deve ser 'Solicitada', 'Aceita', 'Em Andamento', 'Concluida' ou 'Cancelada'", HttpStatus.BAD_REQUEST);
+        const statusValidos = Object.values(ViagemStatus);
+        if(!statusValidos.includes(status as ViagemStatus)){
+            throw new HttpException("Status da viagem é inválido! Deve ser 'SOLICITADA', 'ACEITA', 'EM_ANDAMENTO', 'CONCLUIDA' ou 'CANCELADA'", HttpStatus.BAD_REQUEST);
         }
         
+    }
+
+    private normalizarStatus(status?: string): string {
+        if (!status) {
+            return ViagemStatus.SOLICITADA;
+        }
+
+        return status.trim().toUpperCase().replace(/\s+/g, "_");
     }
 
     private ajustarDataAgendamento(viagem: Viagem): void {
