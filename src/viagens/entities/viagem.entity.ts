@@ -52,7 +52,7 @@ export class Viagem {
     dataEncerramento: Date;
 
     @IsNotEmpty()
-    @Column({ type: 'enum', enum: ["Dinheiro", "Cartão", "Pix"], nullable: false })
+    @Column({ type: 'enum', enum: ["Dinheiro", "Cartão", "Pix"], default: "Dinheiro" })
     @ApiProperty()
     pagamento: string;
 
