@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { ViagemStatus } from "../../util/viagem-status.enum";
 import { Transform,TransformFnParams } from "class-transformer";
@@ -26,7 +26,7 @@ export class Viagem {
     destino: string;
 
     
-    @IsNotEmpty()
+    @IsOptional()
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
     @ApiProperty()
     distancia: number;

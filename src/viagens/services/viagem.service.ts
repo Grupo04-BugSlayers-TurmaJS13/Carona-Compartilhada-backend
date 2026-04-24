@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, ILike, DeleteResult, LessThan, MoreThan } from "typeorm";
+import { Repository, ILike, DeleteResult } from "typeorm";
 import { Viagem } from "../entities/viagem.entity";
 import { ViagemStatus } from "../../util/viagem-status.enum";
 
@@ -60,7 +60,7 @@ export class ViagemService{
         viagem.status = this.normalizarStatus(viagem.status);
         this.verificarStatusValido(viagem.status);
         this.ajustarDataAgendamento(viagem);
-        this.calcularTempoViagem(viagem);
+        await this.calcularDistanciaETempo(viagem);
         this.calcularValorViagem(viagem);
         //INSERT INTO tb_viagems (nome, texto) VALUES(?, ?);
         return await this.viagemRepository.save(viagem);
@@ -71,17 +71,18 @@ export class ViagemService{
         if(!viagem.id || viagem.id <= 0)
             throw new HttpException("O ID da viagem é inválido!", HttpStatus.BAD_REQUEST);
 
-        //Checa se a Viagem existe
-        await this.findByid(viagem.id);
+        // Checa se a viagem existe e preserva os campos caso o payload venha parcial.
+        const viagemExistente = await this.findByid(viagem.id);
+        const viagemAtualizada = this.viagemRepository.merge(viagemExistente, viagem);
 
-        viagem.status = this.normalizarStatus(viagem.status);
-        this.verificarStatusValido(viagem.status);
-        this.ajustarDataAgendamento(viagem);
-        this.calcularTempoViagem(viagem);
-        this.calcularValorViagem(viagem);
+        viagemAtualizada.status = this.normalizarStatus(viagemAtualizada.status);
+        this.verificarStatusValido(viagemAtualizada.status);
+        this.ajustarDataAgendamento(viagemAtualizada);
+        await this.calcularDistanciaETempo(viagemAtualizada);
+        this.calcularValorViagem(viagemAtualizada);
 
         //UPDATE tb_viagems SET nome = ?, texto = ?, data = CURRENT_TIMESTAMP() WHERE id = ?;
-        return await this.viagemRepository.save(viagem);
+        return await this.viagemRepository.save(viagemAtualizada);
     }
 
     async delete(id: number): Promise<DeleteResult>{
@@ -162,27 +163,128 @@ export class ViagemService{
         viagem.dataAgendamento = data;
     }
 
-    private calcularTempoViagem(viagem: Viagem): void {
-        if (viagem.distancia === null || viagem.distancia === undefined) {
+    private async calcularDistanciaETempo(viagem: Viagem): Promise<void> {
+        if (!viagem.embarque || !viagem.destino) {
             throw new HttpException(
-                "distancia é obrigatória para calcular tempoViagem.",
+                "embarque e destino são obrigatórios para calcular distância automaticamente.",
                 HttpStatus.BAD_REQUEST,
             );
         }
 
-        const distancia = Number(viagem.distancia);
-        if (Number.isNaN(distancia) || distancia <= 0) {
+        const origem = await this.obterCoordenadas(viagem.embarque);
+        const destino = await this.obterCoordenadas(viagem.destino);
+
+        if (!origem || !destino) {
             throw new HttpException(
-                "distancia inválida. Informe um valor maior que zero.",
+                "Não foi possível localizar embarque ou destino para calcular a rota.",
                 HttpStatus.BAD_REQUEST,
             );
         }
 
-        const velocidadeMediaKmH = 50;
-        const tempoEmHoras = distancia / velocidadeMediaKmH;
+        const rota = await this.obterRota(origem, destino);
 
-        // Armazena o tempo estimado em minutos.
-        viagem.tempoViagem = Math.ceil(tempoEmHoras * 60);
+        if (rota) {
+            viagem.distancia = Number((rota.distanciaMetros / 1000).toFixed(2));
+            viagem.tempoViagem = Math.ceil(rota.duracaoSegundos / 60);
+            return;
+        }
+
+        // Fallback: quando o serviço de rota falhar, estima por linha reta.
+        const distanciaEstimativaKm = this.calcularDistanciaHaversine(
+            origem.latitude,
+            origem.longitude,
+            destino.latitude,
+            destino.longitude,
+        );
+
+        viagem.distancia = Number(distanciaEstimativaKm.toFixed(2));
+        viagem.tempoViagem = Math.ceil((distanciaEstimativaKm / 35) * 60);
+    }
+
+    private async obterCoordenadas(endereco: string): Promise<{ latitude: number; longitude: number } | null> {
+        const query = encodeURIComponent(`${endereco}, Brasil`);
+        const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    "User-Agent": "carona-compartilhada-backend/1.0",
+                },
+            });
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const data = (await response.json()) as Array<{ lat: string; lon: string }>;
+            const localizacao = data[0];
+
+            if (!localizacao) {
+                return null;
+            }
+
+            return {
+                latitude: Number(localizacao.lat),
+                longitude: Number(localizacao.lon),
+            };
+        } catch {
+            return null;
+        }
+    }
+
+    private async obterRota(
+        origem: { latitude: number; longitude: number },
+        destino: { latitude: number; longitude: number },
+    ): Promise<{ distanciaMetros: number; duracaoSegundos: number } | null> {
+        const url = `https://router.project-osrm.org/route/v1/driving/${origem.longitude},${origem.latitude};${destino.longitude},${destino.latitude}?overview=false`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                return null;
+            }
+
+            const data = (await response.json()) as {
+                routes?: Array<{ distance: number; duration: number }>;
+            };
+
+            const rotaPrincipal = data.routes?.[0];
+            if (!rotaPrincipal) {
+                return null;
+            }
+
+            return {
+                distanciaMetros: rotaPrincipal.distance,
+                duracaoSegundos: rotaPrincipal.duration,
+            };
+        } catch {
+            return null;
+        }
+    }
+
+    private calcularDistanciaHaversine(
+        lat1: number,
+        lon1: number,
+        lat2: number,
+        lon2: number,
+    ): number {
+        const raioTerraKm = 6371;
+        const dLat = this.grausParaRadianos(lat2 - lat1);
+        const dLon = this.grausParaRadianos(lon2 - lon1);
+
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(this.grausParaRadianos(lat1)) *
+                Math.cos(this.grausParaRadianos(lat2)) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return raioTerraKm * c;
+    }
+
+    private grausParaRadianos(graus: number): number {
+        return (graus * Math.PI) / 180;
     }
 
     private calcularValorViagem(viagem: Viagem): void {
