@@ -3,13 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, DeleteResult } from 'typeorm';
 import { Viagem } from '../entities/viagem.entity';
 import { ViagemStatus } from '../../util/viagem-status.enum';
+import { Usuario } from '../../usuario/entities/usuario.entity';
 
 @Injectable()
 export class ViagemService {
   constructor(
     @InjectRepository(Viagem)
     private viagemRepository: Repository<Viagem>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Viagem[]> {
     return this.viagemRepository.find({
@@ -131,5 +132,14 @@ export class ViagemService {
     if (Number.isNaN(data.getTime()))
       throw new HttpException('dataAgendamento inválida.', HttpStatus.BAD_REQUEST);
     viagem.dataAgendamento = data;
+  }
+
+  async contratar(id: number, usuarioContratanteId: number): Promise<Viagem> {
+    const viagem = await this.findByid(id)
+
+    viagem.status = ViagemStatus.ACEITA  // ← ou o status correto do enum
+    viagem.usuarioContratante = { id: usuarioContratanteId } as Usuario
+
+    return this.viagemRepository.save(viagem)
   }
 }

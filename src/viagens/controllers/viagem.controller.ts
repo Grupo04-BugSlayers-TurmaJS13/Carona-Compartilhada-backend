@@ -8,51 +8,60 @@ import { JwtAuthGuard } from "../../auth/guard/jwt-auth.guard";
 @UseGuards(JwtAuthGuard)
 @Controller("/viagens")
 @ApiBearerAuth()
-export class ViagemController{
+export class ViagemController {
     constructor(
         private readonly viagemService: ViagemService
-    ){}
+    ) { }
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    findAll(): Promise<Viagem[]>{
+    findAll(): Promise<Viagem[]> {
         return this.viagemService.findAll();
     }
 
     @Get("/:id")
     @HttpCode(HttpStatus.OK)
-    findById(@Param("id", ParseIntPipe)id: number): Promise<Viagem>{
+    findById(@Param("id", ParseIntPipe) id: number): Promise<Viagem> {
         return this.viagemService.findByid(id);
     }
 
     @Get("/destino/:destino")
     @HttpCode(HttpStatus.OK)
-    findByDestino(@Param("destino")destino: string): Promise<Viagem>{
+    findByDestino(@Param("destino") destino: string): Promise<Viagem> {
         return this.viagemService.findByDestino(destino);
     }
 
-    
+
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    create(@Body()viagem: Viagem): Promise<Viagem>{
+    create(@Body() viagem: Viagem): Promise<Viagem> {
         return this.viagemService.create(viagem);
     }
 
     @Put()
     @HttpCode(HttpStatus.OK)
-    update(@Body()viagem: Viagem): Promise<Viagem>{
+    update(@Body() viagem: Viagem): Promise<Viagem> {
         return this.viagemService.update(viagem);
     }
 
     @Delete("/:id")
     @HttpCode(HttpStatus.NO_CONTENT)
-    delete(@Param("id", ParseIntPipe)id: number){
+    delete(@Param("id", ParseIntPipe) id: number) {
         return this.viagemService.delete(id);
     }
 
     @Put("/concluir/")
     @HttpCode(HttpStatus.OK)
-    encerrarViagem(@Body("id", ParseIntPipe)id: number, @Body("dataEncerramento")dataencerramento: Date): Promise<Viagem>{
-        return this.viagemService.encerrarViagem(id,dataencerramento);
+    encerrarViagem(@Body("id", ParseIntPipe) id: number, @Body("dataEncerramento") dataencerramento: Date): Promise<Viagem> {
+        return this.viagemService.encerrarViagem(id, dataencerramento);
+    }
+
+    @Put("/contratar/:id")
+    @HttpCode(HttpStatus.OK)
+    contratarViagem(
+        @Param("id", ParseIntPipe) id: number,
+        @Body("usuarioContratanteId", ParseIntPipe) usuarioContratanteId: number
+    ): Promise<Viagem> {
+        return this.viagemService.contratar(id, usuarioContratanteId)
     }
 }
