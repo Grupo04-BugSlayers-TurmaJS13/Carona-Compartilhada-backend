@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { VeiculoModule } from './veiculos/veiculo.module';
 import { AuthModule } from './auth/auth.module';
@@ -14,7 +13,7 @@ import { DevService } from './data/services/dev.service';
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
-      useClass: ProdService,
+      useClass: process.env.NODE_ENV === 'production' ? ProdService : DevService,
       imports: [ConfigModule],
     }),
     VeiculoModule,
@@ -25,4 +24,4 @@ import { DevService } from './data/services/dev.service';
   controllers: [AppController],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}

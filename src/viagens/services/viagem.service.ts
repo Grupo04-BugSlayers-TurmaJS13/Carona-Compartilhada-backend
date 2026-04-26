@@ -1,161 +1,134 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, ILike, DeleteResult } from "typeorm";
-import { Viagem } from "../entities/viagem.entity";
-import { ViagemStatus } from "../../util/viagem-status.enum";
-
-
-
-
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, ILike, DeleteResult } from 'typeorm';
+import { Viagem } from '../entities/viagem.entity';
+import { ViagemStatus } from '../../util/viagem-status.enum';
 
 @Injectable()
-export class ViagemService{
+export class ViagemService {
+  constructor(
+    @InjectRepository(Viagem)
+    private viagemRepository: Repository<Viagem>,
+  ) {}
 
-    constructor(
-        @InjectRepository(Viagem)
-        private viagemRepository : Repository<Viagem>,
+  async findAll(): Promise<Viagem[]> {
+    return this.viagemRepository.find({
+      relations: { veiculo: true, usuario: true },
+    });
+  }
 
-    ){}
+  async findByid(id: number): Promise<Viagem> {
+    const viagem = await this.viagemRepository.findOne({
+      where: { id: Number(id) },
+      relations: { veiculo: true, usuario: true },
+    });
+    if (!viagem)
+      throw new HttpException('Viagem não encontrada!', HttpStatus.NOT_FOUND);
+    return viagem;
+  }
 
-    async findAll():  Promise<Viagem[]>{
-        // SELECT * FROM tb_viagems;
-        return this.viagemRepository.find({ relations: { veiculo: true, usuario: true } });
+  async findByDestino(destino: string): Promise<Viagem> {
+    const viagem = await this.viagemRepository.findOne({
+      where: { destino: ILike(`%${destino}%`) },
+      relations: { veiculo: true, usuario: true },
+    });
+    if (!viagem)
+      throw new HttpException('Viagem não encontrada!', HttpStatus.NOT_FOUND);
+    return viagem;
+  }
+
+  async create(viagem: Viagem): Promise<Viagem> {
+    viagem.status = this.normalizarStatus(viagem.status);
+    this.verificarStatusValido(viagem.status);
+    this.ajustarDataAgendamento(viagem);
+    try {
+      return await this.viagemRepository.save(viagem);
+    } catch (error) {
+      console.error('Erro ao criar viagem:', error);
+      throw new HttpException(
+        error?.message ?? 'Erro ao salvar viagem. Verifique os dados e relacionamentos.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
+  }
 
-    
-    async findByid(id: number): Promise<Viagem>{
-        // SELECT * FROM tb_viagems where id = ? ;
-        const viagem = await this.viagemRepository.findOne({
-            where:{
-                id: id
-            },
-            relations: { veiculo: true, usuario: true }
-        })
+  async update(viagem: Viagem): Promise<Viagem> {
+    const id = Number(viagem.id);
+    if (!id || id <= 0)
+      throw new HttpException('O ID da viagem é inválido!', HttpStatus.BAD_REQUEST);
 
-        if(!viagem)
-            throw new HttpException("Viagem não encontrada!", HttpStatus.NOT_FOUND);
+    await this.findByid(id);
 
-        return viagem;
+    const status = this.normalizarStatus(viagem.status);
+    this.verificarStatusValido(status);
+
+    const dadosParaAtualizar = {
+      embarque: viagem.embarque,
+      destino: viagem.destino,
+      distancia: viagem.distancia,
+      tempoViagem: Number(viagem.tempoViagem),
+      status,
+      agendamento: viagem.agendamento,
+      dataAgendamento: viagem.agendamento
+        ? new Date(viagem.dataAgendamento)
+        : new Date(),
+      dataEncerramento: viagem.dataEncerramento
+        ? new Date(viagem.dataEncerramento)
+        : null,
+      pagamento: viagem.pagamento,
+      valor: Number(viagem.valor),
+      veiculo: viagem.veiculo,
+      usuario: viagem.usuario,
+    } as any;
+
+    try {
+      await this.viagemRepository.update(id, dadosParaAtualizar);
+      return await this.findByid(id);
+    } catch (error) {
+      console.error('Erro ao atualizar viagem:', error);
+      throw new HttpException(
+        error?.message ?? 'Erro ao atualizar viagem.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
+  }
 
-    async findByDestino(destino: string): Promise<Viagem>{
-        // SELECT * FROM tb_viagems where id = ? ;
-        const viagem = await this.viagemRepository.findOne({
-            where:{
-                destino: ILike(`%${destino}%`)
-            },
-            relations: { veiculo: true, usuario: true }
-        })
+  async delete(id: number): Promise<DeleteResult> {
+    await this.findByid(Number(id));
+    return await this.viagemRepository.delete(Number(id));
+  }
 
-        if(!viagem)
-            throw new HttpException("Viagem não encontrada!", HttpStatus.NOT_FOUND);
+  async encerrarViagem(id: number, dataEncerramento: Date): Promise<Viagem> {
+    const viagem = await this.findByid(Number(id));
+    if (viagem.status === ViagemStatus.CONCLUIDA)
+      throw new HttpException('A viagem já foi encerrada.', HttpStatus.BAD_REQUEST);
+    viagem.dataEncerramento = dataEncerramento || new Date();
+    viagem.status = ViagemStatus.CONCLUIDA;
+    return await this.viagemRepository.save(viagem);
+  }
 
-        return viagem;
+  private verificarStatusValido(status: string): void {
+    const statusValidos = Object.values(ViagemStatus);
+    if (!statusValidos.includes(status as ViagemStatus)) {
+      throw new HttpException('Status da viagem é inválido!', HttpStatus.BAD_REQUEST);
     }
+  }
 
-    
-    
-    async create(viagem: Viagem): Promise<Viagem>{
+  private normalizarStatus(status?: string): string {
+    if (!status) return ViagemStatus.SOLICITADA;
+    return status.trim().toUpperCase().replace(/\s+/g, '_');
+  }
 
-        viagem.status = this.normalizarStatus(viagem.status);
-        this.verificarStatusValido(viagem.status);
-        this.ajustarDataAgendamento(viagem);
-        //INSERT INTO tb_viagems (nome, texto) VALUES(?, ?);
-        return await this.viagemRepository.save(viagem);
+  private ajustarDataAgendamento(viagem: Viagem): void {
+    if (!viagem.agendamento) {
+      viagem.dataAgendamento = new Date();
+      return;
     }
-
-    async update(viagem: Viagem): Promise<Viagem>{
-        
-        if(!viagem.id || viagem.id <= 0)
-            throw new HttpException("O ID da viagem é inválido!", HttpStatus.BAD_REQUEST);
-
-        // Checa se a viagem existe e preserva os campos caso o payload venha parcial.
-        const viagemExistente = await this.findByid(viagem.id);
-        const viagemAtualizada = this.viagemRepository.merge(viagemExistente, viagem);
-
-        viagemAtualizada.status = this.normalizarStatus(viagemAtualizada.status);
-        this.verificarStatusValido(viagemAtualizada.status);
-        this.ajustarDataAgendamento(viagemAtualizada);
-
-        //UPDATE tb_viagems SET nome = ?, texto = ?, data = CURRENT_TIMESTAMP() WHERE id = ?;
-        return await this.viagemRepository.save(viagemAtualizada);
-    }
-
-    async delete(id: number): Promise<DeleteResult>{
-        
-        await this.findByid(id);
-
-        //DELETE tb_viagems FROM  ID = ?;
-        return await this.viagemRepository.delete(id);
-    }
-
-
-    async encerrarViagem(id: number, dataEncerramento: Date): Promise<Viagem> {
-        if (!id || id <= 0) {
-            throw new HttpException(
-                "O ID da viagem é inválido!",
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-
-        const viagem = await this.findByid(id);
-
-        if (viagem.status === ViagemStatus.CONCLUIDA) {
-            throw new HttpException(
-                "A viagem já foi encerrada.",
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-        if(!viagem.dataEncerramento) {
-          viagem.dataEncerramento = new Date();
-        }
-        viagem.dataEncerramento = dataEncerramento;
-        viagem.status = ViagemStatus.CONCLUIDA;
-
-        return await this.viagemRepository.save(viagem);
-    }
-
-
-
-    private verificarStatusValido(status: string): void{
-        const statusValidos = Object.values(ViagemStatus);
-        if(!statusValidos.includes(status as ViagemStatus)){
-            throw new HttpException("Status da viagem é inválido! Deve ser 'SOLICITADA', 'ACEITA', 'EM_ANDAMENTO', 'CONCLUIDA' ou 'CANCELADA'", HttpStatus.BAD_REQUEST);
-        }
-        
-    }
-
-    private normalizarStatus(status?: string): string {
-        if (!status) {
-            return ViagemStatus.SOLICITADA;
-        }
-
-        return status.trim().toUpperCase().replace(/\s+/g, "_");
-    }
-
-    private ajustarDataAgendamento(viagem: Viagem): void {
-        if (!viagem.agendamento) {
-            viagem.dataAgendamento = new Date();
-            return;
-        }
-
-        if (!viagem.dataAgendamento) {
-            throw new HttpException(
-                "dataAgendamento é obrigatória quando agendamento for verdadeiro.",
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-
-        const data = new Date(viagem.dataAgendamento);
-        if (Number.isNaN(data.getTime())) {
-            throw new HttpException(
-                "dataAgendamento inválida.",
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-
-        viagem.dataAgendamento = data;
-    }
-
-    
+    if (!viagem.dataAgendamento)
+      throw new HttpException('dataAgendamento é obrigatória.', HttpStatus.BAD_REQUEST);
+    const data = new Date(viagem.dataAgendamento);
+    if (Number.isNaN(data.getTime()))
+      throw new HttpException('dataAgendamento inválida.', HttpStatus.BAD_REQUEST);
+    viagem.dataAgendamento = data;
+  }
 }

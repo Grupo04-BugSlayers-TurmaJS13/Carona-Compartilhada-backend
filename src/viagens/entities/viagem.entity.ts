@@ -1,7 +1,6 @@
 import { IsNotEmpty } from "class-validator";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ViagemStatus } from "../../util/viagem-status.enum";
-import { Transform,TransformFnParams } from "class-transformer";
 import { Veiculo } from "../../veiculos/entities/veiculo.entity";
 import { Usuario } from "../../usuario/entities/usuario.entity";
 import { ApiProperty } from "@nestjs/swagger/dist/decorators/api-property.decorator";
@@ -13,19 +12,16 @@ export class Viagem {
     @ApiProperty()
     id: number;
 
-    @Transform(({value } : TransformFnParams) => value?.trim()) // remover espaços em branco do inicio e fim
-    @IsNotEmpty() // Força digitação
-    @Column({length: 100, nullable: false}) // VARCHAR(100) NOT NULL
+    @IsNotEmpty()
+    @Column({ length: 100, nullable: false })
     @ApiProperty()
     embarque: string;
 
-    @Transform(({value } : TransformFnParams) => value?.trim()) // remover espaços em branco do inicio e fim
-    @IsNotEmpty() // Força digitação
-    @Column({length: 100, nullable: false}) // VARCHAR(100) NOT NULL
+    @IsNotEmpty()
+    @Column({ length: 100, nullable: false })
     @ApiProperty()
     destino: string;
 
-    
     @IsNotEmpty()
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
     @ApiProperty()
@@ -61,10 +57,10 @@ export class Viagem {
     valor: number;
 
     @ApiProperty({ type: () => Veiculo })
-    @ManyToOne(() => Veiculo, (veiculo) => veiculo.id)
+    @ManyToOne(() => Veiculo)
     veiculo: Veiculo;
 
     @ApiProperty({ type: () => Usuario })
-    @ManyToOne(() => Usuario, (usuario) => usuario.id)
+    @ManyToOne(() => Usuario)
     usuario: Usuario;
 }
