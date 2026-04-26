@@ -13,14 +13,14 @@ export class ViagemService {
 
   async findAll(): Promise<Viagem[]> {
     return this.viagemRepository.find({
-      relations: { veiculo: true, usuario: true },
+      relations: { veiculo: true, usuario: true, usuarioContratante: true },
     });
   }
 
   async findByid(id: number): Promise<Viagem> {
     const viagem = await this.viagemRepository.findOne({
       where: { id: Number(id) },
-      relations: { veiculo: true, usuario: true },
+      relations: { veiculo: true, usuario: true, usuarioContratante: true },
     });
     if (!viagem)
       throw new HttpException('Viagem não encontrada!', HttpStatus.NOT_FOUND);
@@ -30,7 +30,7 @@ export class ViagemService {
   async findByDestino(destino: string): Promise<Viagem> {
     const viagem = await this.viagemRepository.findOne({
       where: { destino: ILike(`%${destino}%`) },
-      relations: { veiculo: true, usuario: true },
+      relations: { veiculo: true, usuario: true, usuarioContratante: true },
     });
     if (!viagem)
       throw new HttpException('Viagem não encontrada!', HttpStatus.NOT_FOUND);
@@ -79,6 +79,7 @@ export class ViagemService {
       valor: Number(viagem.valor),
       veiculo: viagem.veiculo,
       usuario: viagem.usuario,
+      usuarioContratante: viagem.usuarioContratante,
     } as any;
 
     try {

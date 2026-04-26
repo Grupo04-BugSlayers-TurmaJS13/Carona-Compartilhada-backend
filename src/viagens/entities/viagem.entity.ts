@@ -63,4 +63,8 @@ export class Viagem {
     @ApiProperty({ type: () => Usuario })
     @ManyToOne(() => Usuario)
     usuario: Usuario;
+
+    @ApiProperty({ type: () => Usuario, required: false })
+    @ManyToOne(() => Usuario, { nullable: true })
+    usuarioContratante?: Usuario;
 }
